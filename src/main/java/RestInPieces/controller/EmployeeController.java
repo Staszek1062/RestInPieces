@@ -6,10 +6,10 @@ import RestInPieces.services.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
+
 
 import java.util.List;
 
@@ -28,23 +28,24 @@ public class EmployeeController {
         List<EntityModel<Employee>> employees =employeeService.getEmployees().stream()
                 .map(employee -> EntityModel.of(employee,
                         linkTo(methodOn(EmployeeController.class).getEmployee(employee.getId())).withSelfRel(),
-                        linkTo(methodOn(EmployeeController.class).getEmployee(employee.getId())).withRel("employees")
+                        linkTo(methodOn(EmployeeController.class).getEmployees()).withRel("employees")
                 )).toList();
         return CollectionModel.of(employees,
                 linkTo(methodOn(EmployeeController.class).getEmployees()).withSelfRel()
         );
     }
-    @GetMapping("/employee/{id}")
+    @GetMapping("/employees/{id}")
     public EntityModel<Employee> getEmployee(@PathVariable Long id){
+
         return EntityModel.of(employeeService.getEmployee(id),
                 linkTo(methodOn(EmployeeController.class).getEmployee(id)).withSelfRel(),
                 linkTo(methodOn(EmployeeController.class).getEmployees()).withRel("employees"),
-                linkTo(methodOn(EmployeeController.class).getEmployees()).withRel("deactivate")
+                linkTo(EmployeeController.class).slash("employees").slash(id).slash("deactivate")
                         .withRel("deactivate")
         );
     }
-    @PostMapping("/employee")
-    public ResponseEntity<Object> createEmployees(@RequestBody EmployeeDto employeeDto){
+    @PostMapping("/employees")
+    public ResponseEntity<Object> createEmployee(@RequestBody EmployeeDto employeeDto){
         Employee employee = employeeService.createEmployee(new Employee(
                 EMPTY_ID,
                 employeeDto.getFirstname(),
@@ -52,14 +53,16 @@ public class EmployeeController {
                 employeeDto.isActive(),
                 employeeDto.getCreated()
         ));
-        UriComponents uriComponents = UriComponentsBuilder.
-                fromHttpUrl("http://localhost:8080/employee/{id}").
-                buildAndExpand(employee.getId());
-
-        return ResponseEntity.created(uriComponents.toUri())
-                .body(employee);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(EntityModel.of(employee,
+                        linkTo(methodOn(EmployeeController.class).createEmployee(employeeDto)).withSelfRel(),
+                        linkTo(methodOn(EmployeeController.class).getEmployees()).withRel("employees"),
+                        linkTo(EmployeeController.class).slash("employees").slash(employee.getId()).slash("deactivate")
+                                .withRel("deactivate")
+                ));
     }
-    @PutMapping("/employee/{id}")
+
+    @PutMapping("/employees/{id}")
     public ResponseEntity<Object> updateEmployees(@PathVariable Long id, @RequestBody EmployeeDto employeeDto){
         employeeService.updateEmployee(new Employee(
                 id,
@@ -70,13 +73,12 @@ public class EmployeeController {
         ));
         return ResponseEntity.noContent().build();
     }
-    @DeleteMapping("/employee/{id}")
-    @RequestMapping(value ="/employee/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping("/employees/{id}")
     public ResponseEntity<Object> deleteEmployees(@PathVariable Long id){
         employeeService.deleteEmployee(id);
         return ResponseEntity.noContent().build();
     }
-    @PutMapping("/employee/{id}/deactivate")
+    @PutMapping("/employees/{id}/deactivate")
     public void deactivateEmployee(@PathVariable Long id){
 
     }
