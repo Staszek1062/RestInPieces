@@ -24,8 +24,8 @@ public class EmployeeController {
 
     private final EmployeeService employeeService;
     @GetMapping("/employees")
-    public CollectionModel<EntityModel<Employee>> getEmployees(){
-        List<EntityModel<Employee>> employees =employeeService.getEmployees().stream()
+    public CollectionModel<EntityModel<Employee>> getEmployees() {
+        List<EntityModel<Employee>> employees = employeeService.getEmployees().stream()
                 .map(employee -> EntityModel.of(employee,
                         linkTo(methodOn(EmployeeController.class).getEmployee(employee.getId())).withSelfRel(),
                         linkTo(methodOn(EmployeeController.class).getEmployees()).withRel("employees")
@@ -35,8 +35,7 @@ public class EmployeeController {
         );
     }
     @GetMapping("/employees/{id}")
-    public EntityModel<Employee> getEmployee(@PathVariable Long id){
-
+    public EntityModel<Employee> getEmployee(@PathVariable Long id) {
         return EntityModel.of(employeeService.getEmployee(id),
                 linkTo(methodOn(EmployeeController.class).getEmployee(id)).withSelfRel(),
                 linkTo(methodOn(EmployeeController.class).getEmployees()).withRel("employees"),
@@ -45,7 +44,7 @@ public class EmployeeController {
         );
     }
     @PostMapping("/employees")
-    public ResponseEntity<Object> createEmployee(@RequestBody EmployeeDto employeeDto){
+    public ResponseEntity<EntityModel<Employee>> createEmployee(@RequestBody EmployeeDto employeeDto) {
         Employee employee = employeeService.createEmployee(new Employee(
                 EMPTY_ID,
                 employeeDto.getFirstname(),
@@ -63,7 +62,7 @@ public class EmployeeController {
     }
 
     @PutMapping("/employees/{id}")
-    public ResponseEntity<Object> updateEmployees(@PathVariable Long id, @RequestBody EmployeeDto employeeDto){
+    public ResponseEntity<Object> updateEmployee(@PathVariable Long id, @RequestBody EmployeeDto employeeDto) {
         employeeService.updateEmployee(new Employee(
                 id,
                 employeeDto.getFirstname(),
@@ -74,7 +73,7 @@ public class EmployeeController {
         return ResponseEntity.noContent().build();
     }
     @DeleteMapping("/employees/{id}")
-    public ResponseEntity<Object> deleteEmployees(@PathVariable Long id){
+    public ResponseEntity<Object> deleteEmployee(@PathVariable Long id) {
         employeeService.deleteEmployee(id);
         return ResponseEntity.noContent().build();
     }

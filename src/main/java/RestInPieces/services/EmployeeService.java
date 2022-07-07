@@ -18,12 +18,12 @@ public class EmployeeService {
     public List<Employee> getEmployees(){
         return employeeRepository.findAll();
     }
-    public Employee getEmployee(@PathVariable Long id){
-        return employeeRepository.findById(id).orElseThrow();
 
+    public Employee getEmployee(Long id) {
+        return employeeRepository.findById(id).orElseThrow();
     }
 
-    public Employee createEmployee(@RequestBody Employee employee) {
+    public Employee createEmployee(Employee employee) {
         return employeeRepository.save(employee);
     }
 
